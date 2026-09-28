@@ -110,7 +110,11 @@ nhưng cost guard phải chặn, và một tình huống ngược lại.
 Nếu gộp hai endpoint làm một và cho nó kiểm tra Redis, chuyện gì xảy ra với cụm
 3 container khi Redis mất kết nối 30 giây? Trả lời theo đúng thứ tự sự kiện.
 
-> 
+> 1. Redis mất kết nối, container 1 (agent-0) fail check health/ready, status chuyển sang red.
+> 2. Hệ thống Orchestrator gọi định kỳ vào endpoint health check của cả 3 container agent. Do Redis chết, cả 3 container đều trả về lỗi 503.
+> 3. Vì đây là liveness probe, Orchestrator mặc định rằng tiến trình của container đã bị treo/hỏng và ra quyết định restart đồng loạt cả 3 container agent.
+> 4. 3 container bị khởi động lại, nhưng chúng vẫn không thể kết nối được tới Redis (vì Redis vẫn đang chết).
+> 5. Lặp lại chu trình: fail → restart → fail → restart, dẫn đến tình trạng crash loop và không có container nào hoạt động bình thường trong suốt 30 giây.
 
 ---
 
