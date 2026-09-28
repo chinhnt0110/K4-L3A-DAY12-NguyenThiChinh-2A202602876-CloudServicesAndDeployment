@@ -35,7 +35,7 @@ def verify_api_key(
     Gợi ý: dùng ``status.HTTP_401_UNAUTHORIZED`` cho dễ đọc.
     """
     settings = get_settings()
-    if not secrets.compare_digest(x_api_key or "", settings.agent_api_key):
+    if not x_api_key or not secrets.compare_digest(x_api_key, settings.agent_api_key):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="invalid or missing API key",
